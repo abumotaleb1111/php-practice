@@ -192,6 +192,9 @@
 
                 if(first_name == "" | last_name == "") {
                     $("#error-message").html("All fields are required.").slideDown();
+                    setTimeout(function() {
+                        $("#error-message").hide();                 
+                    }, 2000);
                     $("#success-message").slideUp();
                 }else {
                     $.ajax({
@@ -303,6 +306,8 @@
                 });
 
             });
+
+        
 
 
         });
