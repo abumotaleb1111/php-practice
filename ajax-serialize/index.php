@@ -65,8 +65,8 @@
             <tr>
                 <td>Gender: </td>
                 <td>
-                    <input type="radio" name="gender" value="male">Male
-                    <input type="radio" name="gender" value="female">Female
+                    <input type="radio" name="gender" id="gender" value="Male">Male
+                    <input type="radio" name="gender" id="gender" value="Female">Female
                 </td>
             </tr>
             <tr>
