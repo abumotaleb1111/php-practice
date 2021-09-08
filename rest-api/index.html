@@ -106,7 +106,7 @@
                     <input type="text" name="name" id="name" placeholder="Name">
                     <input type="number" name="age" id="age" placeholder="Age">
                     <input type="text" name="city" id="city" placeholder="City">
-                    <input type="button" id="save-btn" value="Submit">
+                    <input style="cursor: pointer;" type="button" id="save-btn" value="Submit">
                     <br>
                     <br>
                 </form>
@@ -136,32 +136,35 @@
     <div id="modal">
         <div id="modal-form">
             <h2>Update Info</h2>
-            <table cellpadding="10">
-                <tr>
-                    <td>Name</td>
-                    <td>
-                        <input type="text" name="edit_name" id="edit_name">
-                    </td>
-                </tr>
-                <tr>
-                    <td>Age</td>
-                    <td>
-                        <input type="number" name="edit_age" id="edit_age">
-                    </td>
-                </tr>
-                <tr>
-                    <td>City</td>
-                    <td>
-                        <input type="text" name="edit_city" id="edit_city">
-                    </td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>
-                        <input type="submit" id="update-btn" value="Update Info">
-                    </td>
-                </tr>
-            </table>
+            <form action="" method="post" id="update-form">
+                <table cellpadding="10">
+                    <tr>
+                        <td>Name</td>
+                        <td>
+                            <input type="hidden" name="id" id="edit_id">
+                            <input type="text" name="name" id="edit_name">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Age</td>
+                        <td>
+                            <input type="number" name="age" id="edit_age">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>City</td>
+                        <td>
+                            <input type="text" name="city" id="edit_city">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <input type="submit" id="update-btn" value="Update Info">
+                        </td>
+                    </tr>
+                </table>
+            </form>
 
             <div id="close-btn">X</div>
 
@@ -172,7 +175,10 @@
 
     <script type="text/javascript">
         $(document).ready(function() {
+            // Load_Table
             function loadTable() {
+                $("#load-data").html("");
+
                 $.ajax({
                     url : "http://localhost:8080/php-practice/rest-api/api_fetch_all.php",
                     type : "GET",
@@ -182,7 +188,7 @@
                         }else {
                             $.each(data, function(key, value) {
                                 $("#load-data").append("<tr>"
-                                                            +"<td>" + value.id  + "</td>"+
+                                                            +"<td align='center'>" + value.id  + "</td>"+
                                                             "<td>" + value.name  + "</td>"+
                                                             "<td>" + value.age  + "</td>"+
                                                             "<td>" + value.city  + "</td>"+
@@ -220,78 +226,82 @@
 
             //     loadTable(page_id);
             // });
-            function jsonData(targetForm){
-                var arr = $(targetForm).serializeArray();
-                
-                var obj = {};
-                for(var a= 0; a < arr.length; a++){
-                    if(arr[a].value == ""){
-                    return false;
-                    }
-                    obj[arr[a].name] = arr[a].value;
-                }
-                
-                var json_string = JSON.stringify(obj);
-
-                return json_string;
-                
-            }
+        
 
 
             // Insert_New_Data
             $("#save-btn").on("click",function(e){
                 e.preventDefault();
 
-                var jsonObj = jsonData("#add-form");
+                function getFormData($form){
+                var unindexed_array = $form.serializeArray();
+                var indexed_array = {};
 
-                if( jsonObj == false){
-                message("All Fields are required.",false);
-                }else{
-                $.ajax({ 
-                url : "http://localhost:8080/php-practice/rest-api/api_insert.php",
-                type : "POST",
-                dataType: "JSON",
-                data : jsonObj,
-                success : function(data){
-                    alert("hello");
-                    message(data.message, data.status);
-
-                    if(data.status == true){
-                    loadTable();
-                    $("#add-form").trigger("reset");
+                $.map(unindexed_array, function(n, i){
+                    if(n['value'] == "") {
+                        return false;
                     }
-                }
+                    indexed_array[n['name']] = n['value'];
                 });
-            }
+
+                    return indexed_array;
+                }
+
+                var $form = $("#add-form");
+                var data = getFormData($form);
+                var jsonData = JSON.stringify(data);
+
+                if(!$("#name").val() || !$("#age").val() || !$("#city").val()) {
+                    message("All Fields Are Required!", false);
+                }else {
+                    $.ajax({
+                        url: "http://localhost:8080/php-practice/rest-api/api_insert.php",
+                        type: "POST",
+                        data: jsonData,
+                        success:function(data){
+                            message(data.message, data.status);
+
+                            if(data.status == true ) {
+                                loadTable();
+                                $("#add-form").trigger("reset");
+                            }
+                        },
+                        error:function(){
+                            console.log('in error');
+                        },
+
+                    });
+
+                }
+                
             });
 
                             
+            // Delete_Data
+            $(document).on("click", ".delete-btn", function() {
+                if(confirm("Delete student info?")) {
+                    var id = $(this).data("id");
+                    var obj = {id : id};
+                    var jsonData = JSON.stringify(obj);
 
-            // $(document).on("click", ".delete-btn", function() {
-            //     if(confirm("Delete student info?")) {
-            //         var id = $(this).data("id");
-            //         var element = this;
+                    var element = this;
 
-            //         $.ajax({
-            //             url: "ajax_delete.php",
-            //             type: "POST",
-            //             data: {id: id},
-            //             success: function(data) {
-            //                 if(data == 1) {
-            //                     $(element).closest("tr").fadeOut();
-            //                     $("#success-message").html("Data delete successfully.").slideDown();
-            //                     $("#error-message").slideUp();
-            //                 }else {
-            //                     $("#error-message").html("Can't delete record.").slideDown();
-            //                     $("#success-message").slideUp();
-            //                 }
-            //             }
-            //         });
-            //     }
+                    $.ajax({
+                        url : "http://localhost:8080/php-practice/rest-api/api_delete.php",
+                        type: "POST",
+                        data: jsonData,
+                        success: function(data) {
+                            message(data.message, data.status);
 
-            // });
+                            if(data.status == true) {
+                                loadTable();
+                            }
+                        }
+                    });
+                }
+            });
 
-            // Edit/Update_Data
+            // Edit_Data
             $(document).on("click", ".edit-btn", function() {
                 $("#modal").show();
                 var id = $(this).data("eid");
@@ -303,6 +313,7 @@
                         type: "POST",
                         data: myJSON,
                         success: function(data) {
+                            $("#edit_id").val(data[0].id);
                             $("#edit_name").val(data[0].name);
                             $("#edit_age").val(data[0].age);
                             $("#edit_city").val(data[0].city);
@@ -315,46 +326,83 @@
             });
 
 
-            // $(document).on("click", "#update-btn", function() {
-            //     var edit_id = $("#edit_id").val();
-            //     var edit_first_name = $("#edit_first_name").val();
-            //     var edit_last_name = $("#edit_last_name").val();
+            // Update_Data
+            $("#update-btn").on("click",function(e) {
+                e.preventDefault();
 
-            //     $.ajax({
-            //             url: "ajax_update.php",
-            //             type: "POST",
-            //             data: {id: edit_id, first_name: edit_first_name, last_name: edit_last_name},
-            //             success: function(data) {
-            //                 $("#modal").hide();
-                            
-            //                 if(data == 1) {
-            //                     loadTable();
+                function getFormData($form){
+                var unindexed_array = $form.serializeArray();
+                console.log(unindexed_array);
+                var indexed_array = {};
 
-            //                     $("#success-message").html("Update Info successfully.").slideDown();
-            //                     $("#error-message").slideUp();
-            //                 }else {
-            //                     $("#error-message").html("Can't edit record.").slideDown();
-            //                     $("#success-message").slideUp();
-            //                 }
-            //             }
-            //         });
-            // });
+                $.map(unindexed_array, function(n, i){
+                    if(n['value'] == "") {
+                        return false;
+                    }
+                    indexed_array[n['name']] = n['value'];
+                });
+
+                    return indexed_array;
+                }
+
+                var $form = $("#update-form");
+                var data = getFormData($form);
+                var jsonData = JSON.stringify(data);
+
+                if(!$("#edit_name").val() || !$("#edit_age").val() || !$("#edit_city").val()) {
+                    $("#modal").hide();
+                    message("All Fields Are Required!", false);
+                }else {
+                    $.ajax({
+                        url: "http://localhost:8080/php-practice/rest-api/api_update.php",
+                        type: "POST",
+                        data: jsonData,
+                        success:function(data){
+                            $("#modal").hide();
+
+                            if(data.status == true ) {
+                                loadTable();
+                                message(data.message, data.status);
+                            }
+                        },
+                        error:function(){
+                            console.log('in error');
+                        }
+
+                    });
+
+                }
+                
+            });
 
             // Live_search
-            // $("#search").on("keyup", function() {
-            //     var search_item = $(this).val();
+            $("#search").on("keyup", function() {
+                var search_item = $(this).val();
 
-            //     $.ajax({
-            //         url : "ajax_live_search.php",
-            //         type : "POST",
-            //         data : {search: search_item},
-            //         success : function(data) {
-            //             $("#table-data").html(data);
-            //         }
+                $("#load-data").html("");
 
-            //     });
-
-            // });
+                $.ajax({
+                    url: "http://localhost:8080/php-practice/rest-api/api_search.php?search=" + search_item,
+                    type : "GET",
+                    success : function(data) {
+                        if(data.status == false) {
+                            $("#load-data").append("<tr><td colspan='6'><h2>" + data.message + "</h2></td></tr>");
+                        }else {
+                            $.each(data, function(key, value) {
+                                $("#load-data").append("<tr>"
+                                                            +"<td align='center'>" + value.id  + "</td>"+
+                                                            "<td>" + value.name  + "</td>"+
+                                                            "<td>" + value.age  + "</td>"+
+                                                            "<td>" + value.city  + "</td>"+
+                                                            "<td width='60px' align='center'><button  style='cursor:pointer;' class='edit-btn' data-eid='" + value.id + "'>Edit</button></td>"+
+                                                            "<td width='60px' align='center'><button  style='cursor:pointer;' class='delete-btn' data-id='" + value.id + "'>Delete</button></td>"+
+                                                       "</tr>");
+                            });
+                        }
+                        
+                    }
+                });
+            });
 
         
 

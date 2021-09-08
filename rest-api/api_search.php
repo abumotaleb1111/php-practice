@@ -4,11 +4,11 @@ header('Access-Control-Allow-Origin: *');
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-$search_value = $data['search'];
+$search_value = $_GET['search'];
 
 include "config.php";
 
-$sql = "SELECT * FROM student_details WHERE name LIKE '%$search_value%' ";
+$sql = "SELECT * FROM students_info WHERE name LIKE '%$search_value%' ";
 
 $queryResult = mysqli_query($conn, $sql) or die("Query Failed!".mysqli_error($conn));
 
