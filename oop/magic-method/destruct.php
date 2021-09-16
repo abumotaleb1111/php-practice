@@ -7,9 +7,11 @@ class abc {
     public function hello() {
         echo "This is hello function<br>";
     }
+
     public function __destruct() {
         echo "This is destruct function<br>";
     }
+    
 }
 
 
