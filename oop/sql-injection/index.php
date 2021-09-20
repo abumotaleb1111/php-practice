@@ -73,7 +73,7 @@
              
               /* Start the session */
               session_start();
-              /* Set session variables */
+              /* Set session variables */  
              $_SESSION["id"] = $result[0]['id'];
              $_SESSION["first_name"] = $result[0]['first_name'];
               header("location: dashboard.php");              
